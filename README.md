@@ -182,7 +182,7 @@ GET /api/connections
 
 ### Get Connection Info
 
-Check if a specific connection exists.
+Get detailed information about a specific connection.
 
 ```http
 GET /api/connections/:name
@@ -192,9 +192,15 @@ GET /api/connections/:name
 ```json
 {
   "name": "device_01",
-  "exists": true
+  "port": "/dev/ttyUSB0",
+  "baud_rate": 115200,
+  "data_bits": "8",
+  "stop_bits": "1",
+  "parity": "None"
 }
 ```
+
+**Note:** Returns empty strings and zero values for non-existent connections.
 
 ---
 
@@ -343,24 +349,23 @@ When logging is enabled for a connection, all received and transmitted data is w
 
 ```
 webmux/
-   src/
-      main.rs              # Application entry point
-      config/              # Configuration parsing
-         mod.rs
-      serial/              # Serial port management
-         mod.rs
-         connection.rs
-      web/                 # Web server and API
-         mod.rs
-         handlers.rs
-      logging/             # Serial data logging
-          mod.rs
-   Cargo.toml               # Dependencies
-   config.example.yaml      # Example configuration
-   PLAN.md                  # Project plan
-   README.md                # This file
+├── src/
+│   ├── main.rs              # Application entry point
+│   ├── config/              # Configuration parsing
+│   │   └── mod.rs
+│   ├── serial/              # Serial port management
+│   │   ├── mod.rs
+│   │   └── connection.rs
+│   ├── web/                 # Web server and API
+│   │   ├── mod.rs
+│   │   └── handlers.rs
+│   └── logging/             # Serial data logging
+│       └── mod.rs
+├── Cargo.toml               # Dependencies
+├── config.example.yaml      # Example configuration
+├── PLAN.md                  # Project plan
+└── README.md                # This file
 ```
-
 ## Use Cases
 
 ### IoT Devices
@@ -378,7 +383,7 @@ Provide network access to serial devices, enabling remote monitoring and control
 ## Security Considerations
 
 - **No Authentication**: This server does not include authentication. Deploy behind a reverse proxy with authentication if exposing to untrusted networks.
-- **CORS Enabled**: CORS is permissive by default. Adjust in [src/web/mod.rs](src/web/mod.rs:35) for production use.
+- **CORS Enabled**: CORS is permissive by default. Adjust in [src/web/mod.rs](src/web/mod.rs) for production use.
 - **Local Binding**: Default config binds to `127.0.0.1`. Change to `0.0.0.0` only if you need external access.
 
 ## Troubleshooting
