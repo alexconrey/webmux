@@ -1,0 +1,71 @@
+<svg
+  width="512"
+  height="512"
+  viewBox="0 0 512 512"
+  xmlns="http://www.w3.org/2000/svg"
+  role="img"
+  aria-labelledby="title desc"
+>
+  <title id="title">webmux logo</title>
+  <desc id="desc">Terminal window icon with three status dots above the word webmux</desc>
+
+  <!-- Icon outer rounded square -->
+  <rect
+    x="96"
+    y="40"
+    width="320"
+    height="320"
+    rx="64"
+    fill="none"
+    stroke="#0f172a"
+    stroke-width="24"
+  />
+
+  <!-- Inner terminal area -->
+  <rect
+    x="120"
+    y="64"
+    width="272"
+    height="272"
+    rx="48"
+    fill="#020617"
+  />
+
+  <!-- Traffic-light dots -->
+  <circle cx="168" cy="116" r="12" fill="#f97373" />
+  <circle cx="204" cy="116" r="12" fill="#22c55e" />
+  <circle cx="240" cy="116" r="12" fill="#facc15" />
+
+  <!-- Prompt arrow -->
+  <polyline
+    points="176,208 224,240 176,272"
+    fill="none"
+    stroke="#ffffff"
+    stroke-width="18"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+
+  <!-- Underscore -->
+  <line
+    x1="248"
+    y1="272"
+    x2="320"
+    y2="272"
+    stroke="#ffffff"
+    stroke-width="18"
+    stroke-linecap="round"
+  />
+
+  <!-- Brand text -->
+  <text
+    x="256"
+    y="430"
+    text-anchor="middle"
+    font-size="80"
+    font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+    fill="#ffffff"
+  >
+    webmux
+  </text>
+</svg>

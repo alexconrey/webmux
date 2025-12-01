@@ -15,6 +15,12 @@ pub struct SerialManager {
     connections: Arc<RwLock<HashMap<String, SerialConnection>>>,
 }
 
+impl Default for SerialManager {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl SerialManager {
     pub fn new() -> Self {
         Self {
@@ -103,12 +109,18 @@ impl SerialManager {
     }
 }
 
-#[derive(Debug, Clone, serde::Serialize)]
+#[derive(Debug, Clone, serde::Serialize, utoipa::ToSchema)]
 pub struct ConnectionStats {
+    /// Name of the serial connection
     pub name: String,
+    /// Serial port path
     pub port: String,
+    /// Total bytes received from the serial port
     pub bytes_received: u64,
+    /// Total bytes sent to the serial port
     pub bytes_sent: u64,
+    /// Whether the connection is currently active
     pub is_connected: bool,
+    /// Connection uptime in seconds
     pub uptime_seconds: u64,
 }

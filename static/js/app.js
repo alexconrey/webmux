@@ -11,6 +11,7 @@ createApp({
         const connectionInfo = ref(null);
         const stats = ref(null);
         const quickCommands = ref(['STATUS', 'VERSION', 'HELP', 'TEMP']);
+        const isDarkMode = ref(true); // Default to dark mode
 
         // WebSocket
         let ws = null;
@@ -33,6 +34,10 @@ createApp({
 
         const terminalTitle = computed(() => {
             return selectedConnection.value || 'No device selected';
+        });
+
+        const logoPath = computed(() => {
+            return isDarkMode.value ? '/static/logo_dark.svg' : '/static/logo_light.svg';
         });
 
         // Methods
@@ -307,11 +312,15 @@ createApp({
                             displayData = atob(message.data);
                         }
 
+                        // Convert LF to CRLF for proper terminal display
+                        displayData = displayData.replace(/\r?\n/g, '\r\n');
                         term.write(displayData);
                     }
                 } catch (e) {
                     // If not JSON, display as-is
-                    term.write(text);
+                    // Convert LF to CRLF for proper terminal display
+                    const normalizedText = text.replace(/\r?\n/g, '\r\n');
+                    term.write(normalizedText);
                 }
             } catch (error) {
                 log(`Error handling message: ${error.message}`, 'error');
@@ -365,8 +374,73 @@ createApp({
             return str;
         };
 
+        const toggleTheme = () => {
+            isDarkMode.value = !isDarkMode.value;
+
+            // Save preference to localStorage
+            localStorage.setItem('webmux-theme', isDarkMode.value ? 'dark' : 'light');
+
+            // Apply theme class to body
+            document.body.classList.toggle('light-mode', !isDarkMode.value);
+
+            // Update terminal theme
+            if (term) {
+                const theme = isDarkMode.value ? {
+                    background: '#0c0c0c',
+                    foreground: '#d4d4d4',
+                    cursor: '#4ec9b0',
+                    black: '#0c0c0c',
+                    red: '#f48771',
+                    green: '#4ec9b0',
+                    yellow: '#dcdcaa',
+                    blue: '#007acc',
+                    magenta: '#c678dd',
+                    cyan: '#56b6c2',
+                    white: '#d4d4d4',
+                    brightBlack: '#969696',
+                    brightRed: '#f48771',
+                    brightGreen: '#4ec9b0',
+                    brightYellow: '#dcdcaa',
+                    brightBlue: '#007acc',
+                    brightMagenta: '#c678dd',
+                    brightCyan: '#56b6c2',
+                    brightWhite: '#ffffff'
+                } : {
+                    background: '#ffffff',
+                    foreground: '#1e1e1e',
+                    cursor: '#007acc',
+                    black: '#1e1e1e',
+                    red: '#cd3131',
+                    green: '#00bc00',
+                    yellow: '#949800',
+                    blue: '#0451a5',
+                    magenta: '#bc05bc',
+                    cyan: '#0598bc',
+                    white: '#555555',
+                    brightBlack: '#666666',
+                    brightRed: '#cd3131',
+                    brightGreen: '#14ce14',
+                    brightYellow: '#b5ba00',
+                    brightBlue: '#0451a5',
+                    brightMagenta: '#bc05bc',
+                    brightCyan: '#0598bc',
+                    brightWhite: '#a5a5a5'
+                };
+                term.options.theme = theme;
+            }
+        };
+
+        const loadThemePreference = () => {
+            const savedTheme = localStorage.getItem('webmux-theme');
+            if (savedTheme === 'light') {
+                isDarkMode.value = false;
+                document.body.classList.add('light-mode');
+            }
+        };
+
         // Lifecycle
         onMounted(() => {
+            loadThemePreference();
             initTerminal();
             loadConnections();
         });
@@ -388,10 +462,12 @@ createApp({
             connectionInfo,
             stats,
             quickCommands,
+            isDarkMode,
 
             // Computed
             statusClass,
             terminalTitle,
+            logoPath,
 
             // Refs
             terminalEl,
@@ -403,7 +479,8 @@ createApp({
             clearTerminal,
             updateStats,
             formatNumber,
-            formatUptime
+            formatUptime,
+            toggleTheme
         };
     }
 }).mount('#app');

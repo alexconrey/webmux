@@ -7,9 +7,49 @@ use axum::{
 };
 use serde::Serialize;
 use tower_http::{cors::CorsLayer, services::ServeDir};
+use utoipa::OpenApi;
+use utoipa_swagger_ui::SwaggerUi;
 
 mod handlers;
 pub use handlers::*;
+
+#[derive(OpenApi)]
+#[openapi(
+    paths(
+        handlers::list_connections,
+        handlers::get_connection_info,
+        handlers::send_data,
+        handlers::get_stats,
+    ),
+    components(
+        schemas(
+            handlers::ConnectionListItem,
+            handlers::ConnectionInfo,
+            handlers::SendDataRequest,
+            handlers::DataFormat,
+            crate::serial::ConnectionStats,
+        )
+    ),
+    tags(
+        (name = "connections", description = "Serial connection management endpoints"),
+        (name = "data", description = "Data transmission endpoints"),
+        (name = "statistics", description = "Connection statistics endpoints"),
+    ),
+    info(
+        title = "WebMux API",
+        version = "0.1.0",
+        description = "A web-based serial port multiplexer API for managing multiple serial connections",
+        contact(
+            name = "WebMux",
+            url = "https://github.com/yourusername/webmux"
+        ),
+        license(
+            name = "MIT",
+            url = "https://opensource.org/licenses/MIT"
+        )
+    )
+)]
+pub struct ApiDoc;
 
 #[derive(Clone)]
 pub struct AppState {
@@ -34,6 +74,8 @@ pub fn create_router(serial_manager: SerialManager) -> Router {
         .route("/api/connections/:name/stats", get(get_stats))
         // WebSocket for streaming data
         .route("/api/connections/:name/ws", get(websocket_handler))
+        // Swagger UI
+        .merge(SwaggerUi::new("/swagger-ui").url("/api-docs/openapi.json", ApiDoc::openapi()))
         // Serve static files
         .nest_service("/static", ServeDir::new("static"))
         .layer(CorsLayer::permissive())
