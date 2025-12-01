@@ -1,0 +1,124 @@
+version: '3.8'
+
+services:
+  # Virtual serial port creator
+  # This service creates the virtual serial ports and keeps them alive
+  serial-ports:
+    build: .
+    container_name: webmux-serial-ports
+    privileged: true
+    ipc: shareable
+    entrypoint: ./scripts/setup-virtual-ports.sh
+    volumes:
+      - serial-data:/tmp
+      - /dev:/dev
+    networks:
+      - terminal-net
+    healthcheck:
+      test: ["CMD", "test", "-e", "/tmp/ttyVIOT0"]
+      interval: 5s
+      timeout: 3s
+      retries: 3
+
+  # IoT Sensor Mock Device
+  mock-iot:
+    build: .
+    container_name: webmux-mock-iot
+    pid: "service:serial-ports"
+    depends_on:
+      serial-ports:
+        condition: service_healthy
+    entrypoint: []
+    command: mock_device /tmp/ttyVIOT1 iot --verbose
+    volumes:
+      - serial-data:/tmp
+      - /dev:/dev
+      - ./logs:/app/logs
+    networks:
+      - terminal-net
+    restart: unless-stopped
+
+  # Embedded MCU Mock Device
+  mock-mcu:
+    build: .
+    container_name: webmux-mock-mcu
+    pid: "service:serial-ports"
+    depends_on:
+      serial-ports:
+        condition: service_healthy
+    entrypoint: []
+    command: mock_device /tmp/ttyVMCU1 mcu --verbose
+    volumes:
+      - serial-data:/tmp
+      - /dev:/dev
+      - ./logs:/app/logs
+    networks:
+      - terminal-net
+    restart: unless-stopped
+
+  # Industrial PLC Mock Device
+  mock-plc:
+    build: .
+    container_name: webmux-mock-plc
+    pid: "service:serial-ports"
+    depends_on:
+      serial-ports:
+        condition: service_healthy
+    entrypoint: []
+    command: mock_device /tmp/ttyVPLC1 plc --verbose
+    volumes:
+      - serial-data:/tmp
+      - /dev:/dev
+      - ./logs:/app/logs
+    networks:
+      - terminal-net
+    restart: unless-stopped
+
+  # Main WebMux Server
+  server:
+    build: .
+    container_name: webmux-server
+    pid: "service:serial-ports"
+    depends_on:
+      serial-ports:
+        condition: service_healthy
+      mock-iot:
+        condition: service_started
+      mock-mcu:
+        condition: service_started
+      mock-plc:
+        condition: service_started
+    ports:
+      - "8080:8080"
+    volumes:
+      - serial-data:/tmp
+      - /dev:/dev
+      - ./logs:/app/logs
+      - ./config.virtual.yaml:/app/config.virtual.yaml:ro
+    environment:
+      - RUST_LOG=info
+    # Override entrypoint to just run the server
+    entrypoint: []
+    command: bash -c "
+      echo 'Waiting for mock devices to initialize...' &&
+      sleep 3 &&
+      echo 'Starting WebMux...' &&
+      webmux config.virtual.yaml
+      "
+    networks:
+      - terminal-net
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+networks:
+  terminal-net:
+    driver: bridge
+
+volumes:
+  serial-data:
+    driver: local

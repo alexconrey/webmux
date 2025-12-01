@@ -1,0 +1,49 @@
+# Configuration for Virtual Serial Devices
+# Use this config when testing with the mock_device program
+
+server:
+  host: "0.0.0.0"
+  port: 8080
+
+serial_connections:
+  # IoT Sensor (simulated temperature/humidity sensor)
+  - name: "iot_sensor"
+    port: "/tmp/ttyVIOT0"
+    baud_rate: 115200
+    data_bits: 8
+    stop_bits: 1
+    parity: "none"
+    flow_control: "none"
+    enabled: true
+    logging:
+      enabled: true
+      path: "./logs/iot_sensor.log"
+    description: "Simulated IoT temperature and humidity sensor"
+
+  # Embedded MCU (simulated Arduino-like device)
+  - name: "embedded_mcu"
+    port: "/tmp/ttyVMCU0"
+    baud_rate: 9600
+    data_bits: 8
+    stop_bits: 1
+    parity: "none"
+    flow_control: "none"
+    enabled: true
+    logging:
+      enabled: true
+      path: "./logs/embedded_mcu.log"
+    description: "Simulated Arduino Mega 2560"
+
+  # Industrial PLC (simulated industrial controller)
+  - name: "industrial_plc"
+    port: "/tmp/ttyVPLC0"
+    baud_rate: 19200
+    data_bits: 8
+    stop_bits: 2
+    parity: "even"
+    flow_control: "hardware"
+    enabled: true
+    logging:
+      enabled: true
+      path: "./logs/industrial_plc.log"
+    description: "Simulated industrial PLC controller"

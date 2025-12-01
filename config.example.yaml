@@ -1,0 +1,64 @@
+# Terminal Access Server Configuration
+
+# Web server settings
+server:
+  host: "127.0.0.1"
+  port: 8080
+
+# Serial connection definitions
+serial_connections:
+  # Example IoT device connection
+  - name: "iot_sensor_01"
+    port: "/dev/ttyUSB0"
+    baud_rate: 115200
+    data_bits: 8
+    stop_bits: 1
+    parity: "none"  # Options: none, odd, even
+    flow_control: "none"  # Options: none, software, hardware
+    enabled: true
+    logging:
+      enabled: false
+      path: "./logs/iot_sensor_01.log"
+    description: "IoT temperature sensor"
+
+  # Example embedded system connection
+  - name: "embedded_mcu"
+    port: "/dev/ttyACM0"
+    baud_rate: 9600
+    data_bits: 8
+    stop_bits: 1
+    parity: "none"
+    flow_control: "none"
+    enabled: true
+    logging:
+      enabled: false
+      path: "./logs/embedded_mcu.log"
+    description: "Arduino-based control system"
+
+  # Example industrial equipment connection
+  - name: "industrial_plc"
+    port: "/dev/ttyS0"
+    baud_rate: 19200
+    data_bits: 8
+    stop_bits: 2
+    parity: "even"
+    flow_control: "hardware"
+    enabled: true
+    logging:
+      enabled: true
+      path: "./logs/industrial_plc.log"
+    description: "Industrial PLC controller"
+
+  # Windows example (commented out)
+  # - name: "windows_device"
+  #   port: "COM3"
+  #   baud_rate: 115200
+  #   data_bits: 8
+  #   stop_bits: 1
+  #   parity: "none"
+  #   flow_control: "none"
+  #   enabled: true
+  #   logging:
+  #     enabled: false
+  #     path: "./logs/windows_device.log"
+  #   description: "Device on Windows"

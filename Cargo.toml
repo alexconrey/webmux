@@ -1,0 +1,67 @@
+[package]
+name = "webmux"
+version = "0.1.0"
+edition = "2021"
+authors = ["Your Name <your.email@example.com>"]
+description = "A web-based serial port multiplexer for managing multiple serial connections"
+license = "MIT"
+
+[dependencies]
+# Web framework
+axum = { version = "0.7", features = ["ws"] }
+tokio = { version = "1", features = ["full"] }
+tower = "0.4"
+tower-http = { version = "0.5", features = ["cors", "trace", "fs"] }
+
+# Serial port communication
+serialport = "4.3"
+tokio-serial = "5.4"
+
+# Configuration and serialization
+serde = { version = "1", features = ["derive"] }
+serde_yaml = "0.9"
+
+# WebSocket support
+axum-extra = { version = "0.9", features = ["typed-header"] }
+futures = "0.3"
+
+# Logging and tracing
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+
+# Error handling
+anyhow = "1"
+thiserror = "1"
+
+# Utilities
+chrono = "0.4"
+hex = "0.4"
+base64 = "0.21"
+
+# CLI dependencies
+clap = { version = "4", features = ["derive"] }
+tokio-tungstenite = { version = "0.24", features = ["native-tls"] }
+crossterm = "0.28"
+serde_json = "1"
+
+[lib]
+name = "webmux"
+path = "src/lib.rs"
+
+[[bin]]
+name = "webmux"
+path = "src/main.rs"
+
+[[bin]]
+name = "webmux-cli"
+path = "src/bin/cli.rs"
+
+[dev-dependencies]
+# Testing
+tokio-test = "0.4"
+mockall = "0.12"
+tempfile = "3"
+tower = { version = "0.4", features = ["util"] }
+hyper = { version = "1", features = ["full"] }
+http-body-util = "0.1"
+serde_json = "1"
