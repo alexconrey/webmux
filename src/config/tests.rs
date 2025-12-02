@@ -39,7 +39,7 @@ serial_connections:
     assert_eq!(config.serial_connections[0].stop_bits, StopBits::One);
     assert_eq!(config.serial_connections[0].parity, Parity::None);
     assert_eq!(config.serial_connections[0].flow_control, FlowControl::None);
-    assert_eq!(config.serial_connections[0].enabled, true);
+    assert!(config.serial_connections[0].enabled);
 }
 
 #[test]
@@ -278,5 +278,5 @@ serial_connections:
     let config = Config::from_file(file.path().to_str().unwrap()).unwrap();
 
     assert_eq!(config.serial_connections.len(), 1);
-    assert_eq!(config.serial_connections[0].enabled, false);
+    assert!(!config.serial_connections[0].enabled);
 }

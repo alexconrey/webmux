@@ -11,38 +11,60 @@ use base64::{engine::general_purpose, Engine as _};
 use futures::{sink::SinkExt, stream::StreamExt};
 use serde::{Deserialize, Serialize};
 use tracing::{error, info};
+use utoipa::ToSchema;
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, ToSchema)]
 pub struct ConnectionListItem {
+    /// Name of the serial connection
     pub name: String,
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, ToSchema)]
 pub struct ConnectionInfo {
+    /// Name of the serial connection
     pub name: String,
+    /// Serial port path (e.g., /dev/ttyUSB0, COM3)
     pub port: String,
+    /// Baud rate in bits per second
     pub baud_rate: u32,
+    /// Number of data bits (5, 6, 7, or 8)
     pub data_bits: String,
+    /// Number of stop bits (1 or 2)
     pub stop_bits: String,
+    /// Parity setting (None, Odd, or Even)
     pub parity: String,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, ToSchema)]
 pub struct SendDataRequest {
+    /// Data to send to the serial port
     pub data: String,
+    /// Format of the data (text, hex, or base64)
     #[serde(default)]
     pub format: DataFormat,
 }
 
-#[derive(Debug, Deserialize, Default)]
+#[derive(Debug, Deserialize, Default, ToSchema)]
 #[serde(rename_all = "lowercase")]
 pub enum DataFormat {
+    /// Plain text format
     #[default]
     Text,
+    /// Hexadecimal format (e.g., "48656c6c6f" or "48 65 6c 6c 6f")
     Hex,
+    /// Base64 encoded format
     Base64,
 }
 
+/// List all configured serial connections
+#[utoipa::path(
+    get,
+    path = "/api/connections",
+    responses(
+        (status = 200, description = "List of all serial connections", body = Vec<ConnectionListItem>),
+    ),
+    tag = "connections"
+)]
 pub async fn list_connections(
     State(state): State<AppState>,
 ) -> Result<Json<Vec<ConnectionListItem>>, ApiError> {
@@ -54,6 +76,18 @@ pub async fn list_connections(
     Ok(Json(items))
 }
 
+/// Get detailed information about a specific serial connection
+#[utoipa::path(
+    get,
+    path = "/api/connections/{name}",
+    params(
+        ("name" = String, Path, description = "Name of the serial connection")
+    ),
+    responses(
+        (status = 200, description = "Connection information", body = ConnectionInfo),
+    ),
+    tag = "connections"
+)]
 pub async fn get_connection_info(
     State(state): State<AppState>,
     Path(name): Path<String>,
@@ -65,16 +99,16 @@ pub async fn get_connection_info(
                 name: config.name.clone(),
                 port: config.port.clone(),
                 baud_rate: config.baud_rate,
-                data_bits: format!("{}", match config.data_bits {
+                data_bits: (match config.data_bits {
                     crate::config::DataBits::Five => "5",
                     crate::config::DataBits::Six => "6",
                     crate::config::DataBits::Seven => "7",
                     crate::config::DataBits::Eight => "8",
-                }),
-                stop_bits: format!("{}", match config.stop_bits {
+                }).to_string(),
+                stop_bits: (match config.stop_bits {
                     crate::config::StopBits::One => "1",
                     crate::config::StopBits::Two => "2",
-                }),
+                }).to_string(),
                 parity: format!("{:?}", config.parity),
             }))
         }
@@ -92,6 +126,21 @@ pub async fn get_connection_info(
     }
 }
 
+/// Send data to a serial connection
+#[utoipa::path(
+    post,
+    path = "/api/connections/{name}/send",
+    params(
+        ("name" = String, Path, description = "Name of the serial connection")
+    ),
+    request_body = SendDataRequest,
+    responses(
+        (status = 200, description = "Data sent successfully", body = String),
+        (status = 400, description = "Invalid data format"),
+        (status = 404, description = "Connection not found"),
+    ),
+    tag = "data"
+)]
 pub async fn send_data(
     State(state): State<AppState>,
     Path(name): Path<String>,
@@ -110,6 +159,19 @@ pub async fn send_data(
     Ok("Data sent")
 }
 
+/// Get connection statistics
+#[utoipa::path(
+    get,
+    path = "/api/connections/{name}/stats",
+    params(
+        ("name" = String, Path, description = "Name of the serial connection")
+    ),
+    responses(
+        (status = 200, description = "Connection statistics", body = crate::serial::ConnectionStats),
+        (status = 404, description = "Connection not found"),
+    ),
+    tag = "statistics"
+)]
 pub async fn get_stats(
     State(state): State<AppState>,
     Path(name): Path<String>,

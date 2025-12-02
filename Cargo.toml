@@ -38,6 +38,10 @@ chrono = "0.4"
 hex = "0.4"
 base64 = "0.21"
 
+# OpenAPI/Swagger documentation
+utoipa = { version = "4", features = ["axum_extras"] }
+utoipa-swagger-ui = { version = "6", features = ["axum"] }
+
 # CLI dependencies
 clap = { version = "4", features = ["derive"] }
 tokio-tungstenite = { version = "0.24", features = ["native-tls"] }

@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="static/logo_dark.svg" alt="WebMux Logo" width="300">
+</p>
+
 # WebMux
 
 A high-performance web-based serial port multiplexer written in Rust for managing multiple serial connections. Built with Axum and xterm.js, WebMux provides a browser-based terminal interface with RESTful API endpoints and WebSocket support for real-time serial communication with IoT devices, embedded systems, and industrial equipment.
@@ -145,6 +149,21 @@ See [MOCK_DEVICES.md](MOCK_DEVICES.md) for complete documentation on mock device
 - Troubleshooting guide
 
 ## API Reference
+
+### Interactive API Documentation
+
+WebMux includes interactive Swagger/OpenAPI documentation that allows you to explore and test all API endpoints directly in your browser.
+
+**Access Swagger UI:** `http://localhost:8080/swagger-ui`
+
+The Swagger UI provides:
+- Complete API endpoint documentation
+- Request/response schemas
+- Interactive "Try it out" functionality
+- Example requests and responses
+- Data model documentation
+
+**OpenAPI Specification:** `http://localhost:8080/api-docs/openapi.json`
 
 ### Health Check
 

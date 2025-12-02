@@ -6,7 +6,6 @@ use crossterm::{
     terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
 };
 use futures::{SinkExt, StreamExt};
-use serde_json;
 use std::io::{self, Write};
 use tokio::select;
 use tokio_tungstenite::{connect_async, tungstenite::Message};
@@ -94,45 +93,42 @@ async fn main() -> Result<()> {
                 // Handle keyboard input
                 _ = tokio::time::sleep(std::time::Duration::from_millis(10)) => {
                     if event::poll(std::time::Duration::from_millis(0))? {
-                        match event::read()? {
-                            Event::Key(KeyEvent { code, modifiers, .. }) => {
-                                match (code, modifiers) {
-                                    // Ctrl+C to exit
-                                    (KeyCode::Char('c'), KeyModifiers::CONTROL) => {
-                                        println!("\r\nDisconnecting...");
-                                        break;
-                                    }
-                                    // Enter key - send the buffered command
-                                    (KeyCode::Enter, _) => {
-                                        if !input_buffer.is_empty() {
-                                            // Send the complete command with newline
-                                            write.send(Message::Text(format!("{}\r\n", input_buffer))).await?;
-                                            input_buffer.clear();
-                                        } else {
-                                            // Just send newline
-                                            write.send(Message::Text("\r\n".to_string())).await?;
-                                        }
-                                        print!("\r\n");
-                                        io::stdout().flush()?;
-                                    }
-                                    // Backspace - remove from buffer
-                                    (KeyCode::Backspace, _) => {
-                                        if !input_buffer.is_empty() {
-                                            input_buffer.pop();
-                                            print!("\x08 \x08");
-                                            io::stdout().flush()?;
-                                        }
-                                    }
-                                    // Regular character - add to buffer
-                                    (KeyCode::Char(c), _) => {
-                                        input_buffer.push(c);
-                                        print!("{}", c);
-                                        io::stdout().flush()?;
-                                    }
-                                    _ => {}
+                        if let Event::Key(KeyEvent { code, modifiers, .. }) = event::read()? {
+                            match (code, modifiers) {
+                                // Ctrl+C to exit
+                                (KeyCode::Char('c'), KeyModifiers::CONTROL) => {
+                                    println!("\r\nDisconnecting...");
+                                    break;
                                 }
+                                // Enter key - send the buffered command
+                                (KeyCode::Enter, _) => {
+                                    if !input_buffer.is_empty() {
+                                        // Send the complete command with newline
+                                        write.send(Message::Text(format!("{}\r\n", input_buffer))).await?;
+                                        input_buffer.clear();
+                                    } else {
+                                        // Just send newline
+                                        write.send(Message::Text("\r\n".to_string())).await?;
+                                    }
+                                    print!("\r\n");
+                                    io::stdout().flush()?;
+                                }
+                                // Backspace - remove from buffer
+                                (KeyCode::Backspace, _) => {
+                                    if !input_buffer.is_empty() {
+                                        input_buffer.pop();
+                                        print!("\x08 \x08");
+                                        io::stdout().flush()?;
+                                    }
+                                }
+                                // Regular character - add to buffer
+                                (KeyCode::Char(c), _) => {
+                                    input_buffer.push(c);
+                                    print!("{}", c);
+                                    io::stdout().flush()?;
+                                }
+                                _ => {}
                             }
-                            _ => {}
                         }
                     }
                 }
@@ -159,7 +155,7 @@ mod tests {
         assert_eq!(args.host, "127.0.0.1");
         assert_eq!(args.port, 8080);
         assert_eq!(args.device, "test_device");
-        assert_eq!(args.tls, false);
+        assert!(!args.tls);
     }
 
     #[test]
@@ -182,7 +178,7 @@ mod tests {
     #[test]
     fn test_args_tls_enabled() {
         let args = Args::try_parse_from(["webmux-cli", "-s", "-d", "plc"]).unwrap();
-        assert_eq!(args.tls, true);
+        assert!(args.tls);
         assert_eq!(args.device, "plc");
     }
 
@@ -202,7 +198,7 @@ mod tests {
         assert_eq!(args.host, "example.com");
         assert_eq!(args.port, 443);
         assert_eq!(args.device, "industrial_plc");
-        assert_eq!(args.tls, true);
+        assert!(args.tls);
     }
 
     #[test]
